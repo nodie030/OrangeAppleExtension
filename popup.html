@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="header">
+        <h2>學生聯絡簿產生器</h2>
+        <a href="#" id="optionsLink">設定 API Key</a>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-12">
+        <button id="collectDataBtn" class="btn btn-outline-primary btn-block">
+          <i class="fas fa-search"></i> 讀取當前畫面學生
+        </button>
+      </div>
+    </div>
+
+    <div class="info-box">
+        <p><strong>學生：</strong><span id="studentName">尚未讀取</span></p>
+        <p><strong>課程：</strong><span id="courseName">尚未讀取</span></p>
+        <p><strong>進度：</strong><span id="courseStatus">尚未讀取</span></p>
+    </div>
+
+    <div class="form-group checkbox-group">
+        <input type="checkbox" id="hasPrevious">
+        <label for="hasPrevious">上週未完成</label>
+    </div>
+    
+    <div class="form-group" id="previousGroup" style="display: none;">
+        <label>上週進度驗收問題</label>
+        <textarea id="previousQuestions" rows="2" placeholder="例如：迴圈觀念不熟..."></textarea>
+    </div>
+
+    <div class="form-group">
+        <label>本堂課驗收問題 (必填)</label>
+        <textarea id="questions" rows="3" placeholder="例如：1. 如何印出 Hello World?"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label>學習表現 (短述)</label>
+        <textarea id="performance" rows="3" placeholder="例如：今天上課很認真..."></textarea>
+    </div>
+
+    <div class="form-group checkbox-group">
+        <input type="checkbox" id="useAI" checked>
+        <label for="useAI">使用 AI 潤飾 (建議)</label>
+    </div>
+
+    <button id="generateBtn" class="primary-btn">產生並填入網頁</button>
+    <button id="copyBtn" class="primary-btn secondary" style="display:none; margin-top:8px;">純複製到剪貼簿</button>
+
+    <div id="status" class="status-msg"></div>
+
+    <script src="db.js"></script>
+    <script src="popup.js"></script>
+</body>
+</html>

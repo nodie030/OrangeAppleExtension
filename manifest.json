@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Orange Apple Assistant",
+  "version": "1.0",
+  "description": "自動讀取並填寫橘子蘋果職路簿",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "產生職路簿"
+  },
+  "options_page": "options.html",
+  "host_permissions": [
+    "https://api.openai.com/*",
+    "https://*.orangeapple.co/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://*.orangeapple.co/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

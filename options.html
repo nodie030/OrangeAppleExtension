@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>橘子蘋果聯絡簿 設定</title>
+    <style>
+        body { font-family: "Microsoft JhengHei", sans-serif; padding: 20px; max-width: 400px; margin: 0 auto; color: #333;}
+        h2 { color: #E65100; border-bottom: 2px solid #E65100; padding-bottom: 5px;}
+        .form-group { margin-bottom: 16px; margin-top:20px;}
+        label { display: block; margin-bottom: 8px; font-weight: bold; }
+        input[type="text"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;}
+        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; cursor: pointer; border-radius: 4px; font-size: 16px; font-weight: bold;}
+        button:hover { background: #45a049; }
+        #status { margin-top: 15px; color: green; font-weight: bold;}
+    </style>
+</head>
+<body>
+    <h2>橘子蘋果聯絡簿 設定</h2>
+    <div class="form-group">
+        <label>OpenAI API Key (sk-...)</label>
+        <input type="text" id="apiKey" placeholder="請貼上您的 OpenAI API Key">
+    </div>
+    <button id="saveBtn">儲存設定</button>
+    <div id="status"></div>
+    <script src="options.js"></script>
+</body>
+</html>
