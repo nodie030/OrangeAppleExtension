@@ -48,7 +48,7 @@
 ---
 
 ## 💻 開發者資訊
-
+- 可參考 [howardtuan/OrangeAppleAssistant](https://github.com/howardtuan/OrangeAppleAssistant)
 ### 專案架構概覽
 - `manifest.json`：擴充功能的設定檔 (Manifest V3)。
 - `popup.html` / `popup.js` / `popup.css`：擴充功能主操作面板的介面與邏輯。負責串接 OpenAI API。
