@@ -9,16 +9,30 @@
         .form-group { margin-bottom: 16px; margin-top:20px;}
         label { display: block; margin-bottom: 8px; font-weight: bold; }
         input[type="text"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;}
+        input[type="password"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;}
         button { padding: 10px 20px; background: #4CAF50; color: white; border: none; cursor: pointer; border-radius: 4px; font-size: 16px; font-weight: bold;}
         button:hover { background: #45a049; }
         #status { margin-top: 15px; color: green; font-weight: bold;}
+        .inline-option { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-weight: normal; }
+        .inline-option input { width: auto; margin: 0; }
+        .help-text { color: #666; font-size: 13px; line-height: 1.5; margin-top: 8px; }
     </style>
 </head>
 <body>
     <h2>橘子蘋果聯絡簿 設定</h2>
     <div class="form-group">
         <label>OpenAI API Key (sk-...)</label>
-        <input type="text" id="apiKey" placeholder="請貼上您的 OpenAI API Key">
+        <input type="password" id="apiKey" placeholder="請貼上您的 OpenAI API Key" autocomplete="off">
+        <label class="inline-option" for="showApiKey">
+            <input type="checkbox" id="showApiKey">
+            顯示 API Key
+        </label>
+        <div class="help-text">金鑰會儲存在目前 Chrome 個人設定檔的 <code>chrome.storage.local</code>。如果是共用電腦，建議使用自己的 Chrome 個人資料。</div>
+    </div>
+    <div class="form-group">
+        <label>OpenAI 模型</label>
+        <input type="text" id="model" placeholder="留空則使用 gpt-4o-mini">
+        <div class="help-text">可填入你帳號可用的模型名稱，留空時會自動使用 <code>gpt-4o-mini</code>。</div>
     </div>
     <button id="saveBtn">儲存設定</button>
     <div id="status"></div>

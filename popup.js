@@ -74,12 +74,14 @@ async function generateAndFill(copyOnly = false) {
     const copyBtn = document.getElementById('copyBtn');
 
     btn.disabled = true;
+    copyBtn.style.display = 'none';
     status.textContent = '產生中...';
     status.style.color = '#E65100';
 
     try {
-        const config = await chrome.storage.local.get(['openai_api_key']);
+        const config = await chrome.storage.local.get(['openai_api_key', 'openai_model']);
         const apiKey = config.openai_api_key;
+        const model = (config.openai_model || 'gpt-4o-mini').trim() || 'gpt-4o-mini';
 
         let questionsText = document.getElementById('questions').value.trim();
         let performance = document.getElementById('performance').value.trim() || '未提供';
@@ -102,7 +104,7 @@ async function generateAndFill(copyOnly = false) {
 
         if (useAI) {
             if (!apiKey) throw new Error('請點右上角設定 API Key');
-            const aiOutput = await callOpenAI(finalOutput, apiKey);
+            const aiOutput = await callOpenAI(finalOutput, apiKey, model);
             let cleaned = aiOutput.trim();
 
             const marker = '已完成上週內容，驗收問題為：【';
@@ -129,10 +131,19 @@ async function generateAndFill(copyOnly = false) {
 
         // 傳送給 content.js 執行填入
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tab?.id) throw new Error('找不到目前頁籤');
         chrome.tabs.sendMessage(tab.id, { action: 'fillPage', text: finalOutput }, (response) => {
-            if (chrome.runtime.lastError || !response || !response.success) {
+            if (chrome.runtime.lastError) {
                 status.style.color = 'orange';
                 status.textContent = '填入失敗，已複製到剪貼簿。';
+                navigator.clipboard.writeText(finalOutput);
+                copyBtn.style.display = 'block';
+            } else if (!response || !response.success) {
+                const missingText = response?.missingFields?.length
+                    ? `未完成欄位：${response.missingFields.join('、')}`
+                    : '填入失敗';
+                status.style.color = 'orange';
+                status.textContent = `${missingText}，已複製到剪貼簿。`;
                 navigator.clipboard.writeText(finalOutput);
                 copyBtn.style.display = 'block';
             } else {
@@ -149,7 +160,7 @@ async function generateAndFill(copyOnly = false) {
     }
 }
 
-async function callOpenAI(msg, apiKey) {
+async function callOpenAI(msg, apiKey, model) {
     const systemPrompt = '你是老師，請把輸入內容整理成聯絡簿文章。語氣自然、口語，不要官腔，不要敬語或客套語。保持成段落、不要條列或標題。若開頭包含「已完成上週內容，驗收問題為：【...】。」這句，請原封不動保留在最前面。內容需包含：學生、課程、課堂內容、學習表現、驗收問題。';
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -159,7 +170,7 @@ async function callOpenAI(msg, apiKey) {
             Authorization: `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-            model: 'gpt-4o-mini',
+            model,
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: msg }
@@ -167,7 +178,16 @@ async function callOpenAI(msg, apiKey) {
         })
     });
 
-    if (!response.ok) throw new Error('API請求失敗：' + response.statusText);
+    if (!response.ok) {
+        let errorMessage = response.statusText;
+        try {
+            const errorData = await response.json();
+            errorMessage = errorData.error?.message || errorMessage;
+        } catch (parseError) {
+            // Keep the HTTP status text when the error body is not JSON.
+        }
+        throw new Error('API請求失敗：' + errorMessage);
+    }
     const data = await response.json();
     return data.choices[0].message.content;
 }

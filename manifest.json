@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Orange Apple Assistant",
   "version": "1.0",
-  "description": "自動讀取並填寫橘子蘋果職路簿",
+  "description": "自動讀取並填寫橘子蘋果聯絡簿",
   "permissions": [
     "storage",
     "activeTab",
@@ -11,7 +11,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "產生職路簿"
+    "default_title": "產生聯絡簿"
   },
   "options_page": "options.html",
   "host_permissions": [

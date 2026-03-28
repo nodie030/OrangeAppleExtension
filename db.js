@@ -176,18 +176,21 @@ window.getCourseDetailsByText = function(courseText) {
     
     let category = "未知課程";
     let listName = null;
-    let textUpper = courseText.toUpperCase();
+    const courseLabel = courseText.replace(/(?:Lesson|L)\s*\d+.*/i, '').trim();
+    const courseLabelUpper = courseLabel.toUpperCase();
+    const isAdvancedLabel = courseLabel.includes("進階") || /\bADVANCED\b/.test(courseLabelUpper);
+    const isNewTrackLabel = courseLabel.includes("新版") || /\bNEW\b/.test(courseLabelUpper);
     
-    if (textUpper.includes("HTML")) { category = "HTML5"; listName = "HTML"; }
-    else if (textUpper.includes("PYTHON") && textUpper.includes("2")) { category = "Python 進階"; listName = "Python2"; }
-    else if (textUpper.includes("PYTHON")) { category = "Python"; listName = "Python"; }
-    else if (textUpper.includes("SCRATCH") && textUpper.includes("1")) { category = "Scratch 進階"; listName = "Scratch1"; }
-    else if (textUpper.includes("SCRATCH")) { category = "Scratch"; listName = "Scratch0"; }
-    else if (textUpper.includes("JAVASCRIPT") && textUpper.includes("NEW")) { category = "JavaScript 進階"; listName = "JavaScript_New"; }
-    else if (textUpper.includes("JAVASCRIPT")) { category = "JavaScript"; listName = "JavaScript"; }
-    else if (textUpper.includes("DB") || textUpper.includes("資料庫")) { category = "資料庫與 SQL"; listName = "DB"; }
-    else if (textUpper.includes("ALGORITHM") || textUpper.includes("演算法")) { category = "演算法與邏輯"; listName = "Algorithm"; }
-    else if (textUpper.includes("AI") || textUpper.includes("人工智慧")) { category = "AI"; listName = "AI"; }
+    if (courseLabelUpper.includes("HTML")) { category = "HTML5"; listName = "HTML"; }
+    else if (courseLabelUpper.includes("PYTHON") && (isAdvancedLabel || /PYTHON\s*2\b/.test(courseLabelUpper))) { category = "Python 進階"; listName = "Python2"; }
+    else if (courseLabelUpper.includes("PYTHON")) { category = "Python"; listName = "Python"; }
+    else if (courseLabelUpper.includes("SCRATCH") && (isAdvancedLabel || /SCRATCH\s*1\b/.test(courseLabelUpper))) { category = "Scratch 進階"; listName = "Scratch1"; }
+    else if (courseLabelUpper.includes("SCRATCH")) { category = "Scratch"; listName = "Scratch0"; }
+    else if (courseLabelUpper.includes("JAVASCRIPT") && (isAdvancedLabel || isNewTrackLabel)) { category = "JavaScript 進階"; listName = "JavaScript_New"; }
+    else if (courseLabelUpper.includes("JAVASCRIPT")) { category = "JavaScript"; listName = "JavaScript"; }
+    else if (courseLabelUpper.includes("DB") || courseLabel.includes("資料庫")) { category = "資料庫與 SQL"; listName = "DB"; }
+    else if (courseLabelUpper.includes("ALGORITHM") || courseLabel.includes("演算法")) { category = "演算法與邏輯"; listName = "Algorithm"; }
+    else if (courseLabelUpper.includes("AI") || courseLabel.includes("人工智慧")) { category = "AI"; listName = "AI"; }
 
     let numberMatch = courseText.match(/(?:Lesson|L)\s*(\d+)/i);
     let number = 1;

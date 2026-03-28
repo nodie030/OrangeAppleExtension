@@ -5,7 +5,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse(getPageData());
     } else if (request.action === 'fillPage') {
         const result = fillContactBookOnPage(request.text);
-        sendResponse({ success: result });
+        sendResponse(result);
     }
     return true; // 讓 sendResponse 可以非同步呼叫
 });
@@ -49,7 +49,15 @@ function fillContactBookOnPage(generatedText) {
     let container = document.querySelector('.modal-content') || document.querySelector('.modal-body') || document.body;
 
     let targetTextarea = null;
-    let foundBoxes = false;
+    const result = {
+        success: false,
+        filledTextarea: false,
+        checkedConfirmation: false,
+        ratedCourseParticipation: false,
+        ratedClassroomOrder: false,
+        setLearningStatus: false,
+        missingFields: []
+    };
 
     try {
         // 找學習表現的 textarea
@@ -78,7 +86,7 @@ function fillContactBookOnPage(generatedText) {
             targetTextarea.value = generatedText;
             targetTextarea.dispatchEvent(new Event('input', { bubbles: true }));
             targetTextarea.dispatchEvent(new Event('change', { bubbles: true }));
-            foundBoxes = true;
+            result.filledTextarea = true;
         }
 
         // 勾選確認 checkbox
@@ -87,59 +95,75 @@ function fillContactBookOnPage(generatedText) {
             if (labelText.includes('確認學生姓名') || labelText.includes('資訊正確')) {
                 cb.checked = true;
                 cb.dispatchEvent(new Event('change', { bubbles: true }));
+                result.checkedConfirmation = cb.checked;
                 break;
             }
         }
 
         // 自動點星星（課程參與 & 課堂秩序）
-        ['課程參與', '課堂秩序'].forEach(labelTxt => {
-            const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
-            let node = walker.nextNode();
-            while (node) {
-                if (node.textContent.trim() === labelTxt) {
-                    let cur = node.parentElement;
-                    let found = false;
-                    for (let i = 0; i < 5; i++) {
-                        if (!cur) break;
-                        
-                        // 處理半星制 input radio value="10" (滿分5星)
-                        const input10 = cur.querySelector('input[type="radio"][value="10"]');
-                        if (input10) {
-                            input10.checked = true;
-                            input10.dispatchEvent(new Event('change', { bubbles: true }));
-                            // UI 通常是綁在 label 上，觸發對應 label 的點擊事件
-                            const label10 = cur.querySelector(`label[for="${input10.id}"]`);
-                            if (label10) label10.click();
-                            found = true;
-                            break;
-                        }
-
-                        // 其他備案
-                        const stars = cur.querySelectorAll('svg, i.fa-star, span.star, [class*="star"]');
-                        if (stars.length >= 5) {
-                            stars[4].dispatchEvent(new MouseEvent('click', { bubbles: true }));
-                            found = true;
-                            break;
-                        }
-                        cur = cur.parentElement;
-                    }
-                    if (found) break;
-                }
-                node = walker.nextNode();
-            }
-        });
+        result.ratedCourseParticipation = fillRatingByLabel(container, '課程參與');
+        result.ratedClassroomOrder = fillRatingByLabel(container, '課堂秩序');
 
         // 自動選擇「能跟上進度」
         const statusSelect = container.querySelector('select[name="dt_admission_lesson_report[learning_status]"]') 
                           || container.querySelector('#admission_lesson_report_learning_status');
         if (statusSelect) {
-            statusSelect.value = '能跟上進度';
-            statusSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            const matchedOption = Array.from(statusSelect.options).find((option) => (
+                option.value === '能跟上進度' || option.textContent.trim() === '能跟上進度'
+            ));
+            if (matchedOption) {
+                statusSelect.value = matchedOption.value;
+                statusSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                result.setLearningStatus = statusSelect.value === matchedOption.value;
+            }
         }
 
     } catch (e) {
         console.error('[OAA] DOM Error:', e);
     }
 
-    return foundBoxes;
+    if (!result.filledTextarea) result.missingFields.push('學習表現');
+    if (!result.checkedConfirmation) result.missingFields.push('確認勾選');
+    if (!result.ratedCourseParticipation) result.missingFields.push('課程參與');
+    if (!result.ratedClassroomOrder) result.missingFields.push('課堂秩序');
+    if (!result.setLearningStatus) result.missingFields.push('學習狀態');
+
+    result.success = result.missingFields.length === 0;
+    return result;
+}
+
+function fillRatingByLabel(container, labelTxt) {
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+    let node = walker.nextNode();
+
+    while (node) {
+        if (node.textContent.trim().includes(labelTxt)) {
+            let cur = node.parentElement;
+            for (let i = 0; i < 5; i++) {
+                if (!cur) break;
+
+                // 處理半星制 input radio value="10" (滿分5星)
+                const input10 = cur.querySelector('input[type="radio"][value="10"]');
+                if (input10) {
+                    input10.checked = true;
+                    input10.dispatchEvent(new Event('change', { bubbles: true }));
+                    const label10 = cur.querySelector(`label[for="${input10.id}"]`);
+                    if (label10) label10.click();
+                    return true;
+                }
+
+                // 其他備案
+                const stars = cur.querySelectorAll('svg, i.fa-star, span.star, [class*="star"]');
+                if (stars.length >= 5) {
+                    stars[4].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                    return true;
+                }
+
+                cur = cur.parentElement;
+            }
+        }
+        node = walker.nextNode();
+    }
+
+    return false;
 }
